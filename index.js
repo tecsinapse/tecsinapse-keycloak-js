@@ -28,7 +28,17 @@ const createUrlGetUsers = (keycloak, params) => {
     return `${keycloak.urlServer}/admin/realms/${keycloak.realm}/users` + queryParams;
 };
 
-const getToken = (authParams, user) => {
+const createHeaderGetRequest = (accessToken) => {
+    return {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + accessToken
+        }
+    };
+};
+
+const getToken = (keycloak, user) => {
     const tokenDataForm = () => {
         let dataForm = {
             grant_type: 'password',
@@ -58,7 +68,7 @@ const getToken = (authParams, user) => {
         body: tokenDataForm()
     };
 
-    return fetch(createUrlToken(authParams), obj)
+    return fetch(createUrlToken(keycloak), obj)
         .then(res => res.json())
         .then(token => {
             return token;
@@ -69,77 +79,28 @@ const getToken = (authParams, user) => {
         })
 };
 
-const getRoles = (authParams) => {
+const getRoles = (keycloak, user) => {
 //não foi utilizado new FormData() devido a incompatibilidade com o IE. Mais detalhes aqui: https://developer.mozilla.org/en-US/docs/Web/API/Body/formData
-    const tokenDataForm = () => {
-        let dataForm = {
-            grant_type: 'password',
-            client_id: 'admin-cli',
-            username: AuthKeycloak.USERNAME,
-            password: AuthKeycloak.PASSWORD
-        };
-
-        let formBody = [];
-        for (const property in dataForm) {
-            if (dataForm.hasOwnProperty(property)) {
-                const encodedKey = encodeURIComponent(property);
-                const encodedValue = encodeURIComponent(dataForm[property]);
-                formBody.push(encodedKey + "=" + encodedValue);
-            }
-        }
-        formBody = formBody.join("&");
-        return formBody;
-    }
-
-    const fetchToken = () => {
-        const obj = {
-            method: 'POST',
-            headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/x-www-form-urlencoded'
-            },
-            body: tokenDataForm()
-        }
-
-        return fetch(createUrlToken(authParams), obj)
-            .then(res => res.json())
-            .then(token => {
-                return token
-            })
-            .catch(function (err) {
-                console.error(err)
-                return undefined
-            })
-    }
-
     const fetchRoles = (accessToken) => {
-        const access_token = 'Bearer ' + accessToken;
-        const obj = {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': access_token
-            }
-        }
-
-        return fetch(createUrlRole(authParams), obj)
+        return fetch(createUrlRole(keycloak), createHeaderGetRequest(accessToken))
             .then(res => res.json())
             .then(roles => {
                 return roles
             })
             .catch(function (err) {
-                console.error(err)
+                console.error(err);
                 return undefined
             })
-    }
-
-
-    return fetchToken()
+    };
+    return getToken(keycloak, user)
         .then(token => {
-            return fetchRoles(token.access_token)
-                .then(roles => {
-                    return roles
-                })
+            if (token.access_token) {
+                return fetchRoles(token.access_token).then(roles => roles);
+            }
+            throw new Error(token.error_description);
+        }).catch(err => {
+            console.error(err);
+            return undefined;
         });
 };
 
@@ -176,15 +137,7 @@ const TecSinapseKeycloak = {
     },
 
     getUsers(accessToken, keycloak, params) {
-        const authorization = 'Bearer ' + accessToken;
-        const obj = {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': authorization
-            }
-        };
-        return fetch(createUrlGetUsers(keycloak, params), obj)
+        return fetch(createUrlGetUsers(keycloak, params), createHeaderGetRequest(accessToken))
             .then(res => res.json())
             .then(users => {
                 return users
