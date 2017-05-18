@@ -9,34 +9,23 @@ import * as Cookies from "js-cookie";
 
 const createUrlToken = (keycloak) => {
     return `${keycloak.urlServer}/realms/${keycloak.realm}/protocol/openid-connect/token`;
-}
+};
 
 const createUrlRole = (keycloak) => {
     return `${keycloak.urlServer}/admin/realms/${keycloak.realm}/users/${keycloak.userKeycloakId}/role-mappings`;
-}
+};
 
-const createUrlGetUsers = (keycloak) => {
-    return `${keycloak.urlServer}/admin/realms/${keycloak.realm}/users`;
-}
-
-const getUsers = (authParams, accessToken) => {
-    const authorization = 'Bearer ' + accessToken;
-    const obj = {
-        method: 'GET',
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': authorization
+const createUrlGetUsers = (keycloak, params) => {
+    let queryParams = '';
+    if (params) {
+        queryParams = queryParams.concat("?");
+        for (let property in params) {
+            if (params.hasOwnProperty(property)) {
+                queryParams = queryParams.concat(property).concat("=").concat(params[property]);
+            }
         }
-    };
-    return fetch(createUrlGetUsers(authParams), obj)
-        .then(res => res.json())
-        .then(users => {
-            return users
-        })
-        .catch(function (err) {
-            console.error(err);
-            return undefined;
-        })
+    }
+    return `${keycloak.urlServer}/admin/realms/${keycloak.realm}/users` + queryParams;
 };
 
 const getToken = (authParams, user) => {
@@ -184,6 +173,26 @@ const TecSinapseKeycloak = {
 
     logout() {
         Cookies.remove(COOKIE_TECSINAPSE_KEYCLOAK_TOKEN)
+    },
+
+    getUsers(accessToken, keycloak, params) {
+        const authorization = 'Bearer ' + accessToken;
+        const obj = {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': authorization
+            }
+        };
+        return fetch(createUrlGetUsers(keycloak, params), obj)
+            .then(res => res.json())
+            .then(users => {
+                return users
+            })
+            .catch(function (err) {
+                console.error(err);
+                return undefined;
+            })
     }
 };
 export default TecSinapseKeycloak;
