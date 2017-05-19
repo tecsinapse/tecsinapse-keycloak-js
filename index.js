@@ -79,6 +79,8 @@ const getToken = (keycloak, user) => {
         })
 };
 
+const accessToken = () => Cookies.get(COOKIE_TECSINAPSE_KEYCLOAK_TOKEN);
+
 const getRoles = (keycloak, user) => {
 //não foi utilizado new FormData() devido a incompatibilidade com o IE. Mais detalhes aqui: https://developer.mozilla.org/en-US/docs/Web/API/Body/formData
     const fetchRoles = (accessToken) => {
@@ -108,13 +110,13 @@ const COOKIE_TECSINAPSE_KEYCLOAK_TOKEN = 'tecsinapse-keycloak-token';
 
 const TecSinapseKeycloak = {
 
-    login(username, password, options) {
+    login(username, password, keycloak) {
         let logged = this.isLogged();
 
         if (logged) {
             //TODO fazer refresh no token
         } else {
-            logged = getToken(options, {username, password}).then(token => {
+            logged = getToken(keycloak, {username, password}).then(token => {
                 if (token.access_token) {
                     Cookies.set(COOKIE_TECSINAPSE_KEYCLOAK_TOKEN, token.access_token, {expires: 1});
                     return true;
@@ -136,8 +138,12 @@ const TecSinapseKeycloak = {
         Cookies.remove(COOKIE_TECSINAPSE_KEYCLOAK_TOKEN)
     },
 
-    getUsers(accessToken, keycloak, params) {
-        return fetch(createUrlGetUsers(keycloak, params), createHeaderGetRequest(accessToken))
+    getAccessToken() {
+        return accessToken();
+    },
+
+    getUsers(keycloak, params) {
+        return fetch(createUrlGetUsers(keycloak, params), createHeaderGetRequest(accessToken()))
             .then(res => res.json())
             .then(users => {
                 return users
