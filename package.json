@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "Login, logout and refresh token for Keycloak programmatically",
   "author": "TecSinapse",
-  "license": "GPL 3.0",
+  "license": "GNU LPGL 3.0",
   "main": "./dist/index.js",
   "scripts": {
     "test": "exit 0",
@@ -24,5 +24,9 @@
     "presets": [
       "es2015"
     ]
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/tecsinapse/tecsinapse-keycloak-js.git"
   }
 }
