@@ -1,157 +1,70 @@
-/**
- authParams: {
-  realm: 'realm name',
-  urlServer: 'url to keycloak server',
-  userKeycloakId: ,
- }
- */
-import * as Cookies from "js-cookie";
-
-const createUrlToken = (keycloak) => {
-    return `${keycloak.urlServer}/realms/${keycloak.realm}/protocol/openid-connect/token`;
-};
-
-const createUrlRole = (keycloak) => {
-    return `${keycloak.urlServer}/admin/realms/${keycloak.realm}/users/${keycloak.userKeycloakId}/role-mappings`;
-};
-
-const createUrlGetUsers = (keycloak, params) => {
-    let queryParams = '';
-    if (params) {
-        queryParams = queryParams.concat("?");
-        for (let property in params) {
-            if (params.hasOwnProperty(property)) {
-                queryParams = queryParams.concat(property).concat("=").concat(params[property]);
-            }
-        }
-    }
-    return `${keycloak.urlServer}/admin/realms/${keycloak.realm}/users` + queryParams;
-};
-
-const createHeaderGetRequest = (accessToken) => {
-    return {
-        method: 'GET',
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': 'Bearer ' + accessToken
-        }
-    };
-};
-
-const getToken = (keycloak, user) => {
-    const tokenDataForm = () => {
-        let dataForm = {
-            grant_type: 'password',
-            client_id: 'admin-cli',
-            username: user.username,
-            password: user.password
-        };
-
-        let formBody = [];
-        for (const property in dataForm) {
-            if (dataForm.hasOwnProperty(property)) {
-                const encodedKey = encodeURIComponent(property);
-                const encodedValue = encodeURIComponent(dataForm[property]);
-                formBody.push(encodedKey + "=" + encodedValue);
-            }
-        }
-        formBody = formBody.join("&");
-        return formBody;
-    };
-
-    const obj = {
-        method: 'POST',
-        headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/x-www-form-urlencoded'
-        },
-        body: tokenDataForm()
-    };
-
-    return fetch(createUrlToken(keycloak), obj)
-        .then(res => res.json())
-        .then(token => {
-            return token;
-        })
-        .catch(function (err) {
-            console.error(err);
-            return new Error(err);
-        })
-};
-
-const accessToken = () => Cookies.get(COOKIE_TECSINAPSE_KEYCLOAK_TOKEN);
-
-const getRoles = (keycloak, user) => {
-//não foi utilizado new FormData() devido a incompatibilidade com o IE. Mais detalhes aqui: https://developer.mozilla.org/en-US/docs/Web/API/Body/formData
-    const fetchRoles = (accessToken) => {
-        return fetch(createUrlRole(keycloak), createHeaderGetRequest(accessToken))
-            .then(res => res.json())
-            .then(roles => {
-                return roles
-            })
-            .catch(function (err) {
-                console.error(err);
-                return undefined
-            })
-    };
-    return getToken(keycloak, user)
-        .then(token => {
-            if (token.access_token) {
-                return fetchRoles(token.access_token).then(roles => roles);
-            }
-            throw new Error(token.error_description);
-        }).catch(err => {
-            console.error(err);
-            return undefined;
-        });
-};
+import * as Cookies from 'js-cookie';
 
 const COOKIE_TECSINAPSE_KEYCLOAK_TOKEN = 'tecsinapse-keycloak-token';
 
 const TecSinapseKeycloak = {
 
-    login(username, password, keycloak) {
-        let logged = this.isLogged();
-
-        if (logged) {
-            //TODO fazer refresh no token
-        } else {
-            logged = getToken(keycloak, {username, password}).then(token => {
-                if (token.access_token) {
-                    Cookies.set(COOKIE_TECSINAPSE_KEYCLOAK_TOKEN, token.access_token, {expires: 1});
-                    return true;
-                }
-                throw new Error(token.error_description);
-            }).catch(err => {
-                console.error(err);
-                return false;
-            });
+  login(username, password, options) {
+    const logged = this.isLogged();
+    if (logged && !options.transient) {
+      // TODO so pedir refresh quando estiver proximo de expirar o token
+      return KeycloakService.refreshToken(options, this.getRefreshToken()).then((result) => {
+        if (result.error) {
+          this.logout();
+          Promise.reject(new Error(`Erro ao atualizar token, ${result.error}, ${result.error_description}`));
         }
-        return logged;
-    },
-
-    isLogged() {
-        return !!Cookies.get(COOKIE_TECSINAPSE_KEYCLOAK_TOKEN)
-    },
-
-    logout() {
-        Cookies.remove(COOKIE_TECSINAPSE_KEYCLOAK_TOKEN)
-    },
-
-    getAccessToken() {
-        return accessToken();
-    },
-
-    getUsers(keycloak, params) {
-        return fetch(createUrlGetUsers(keycloak, params), createHeaderGetRequest(accessToken()))
-            .then(res => res.json())
-            .then(users => {
-                return users
-            })
-            .catch(function (err) {
-                console.error(err);
-                return undefined;
-            })
+        this.setCookie(result);
+        return Promise.resolve(result.access_token);
+      })
     }
+    return KeycloakService.getTokenByUsernameAndPassword(options, {username, password}).then(json => {
+      if (json.error) {
+        Promise.reject(new Error(`Erro ao obter token de acesso por usuario e senha, ${json.error}, ${json.error_description}`));
+      }
+
+      if (!options.transient) {
+        this.setCookie(json);
+      }
+      return Promise.resolve(json.access_token);
+    });
+  },
+
+  isLogged() {
+    return !!Cookies.get(COOKIE_TECSINAPSE_KEYCLOAK_TOKEN)
+  },
+
+  logout() {
+    Cookies.remove(COOKIE_TECSINAPSE_KEYCLOAK_TOKEN)
+  },
+
+  setCookie(json) {
+    Cookies.set(COOKIE_TECSINAPSE_KEYCLOAK_TOKEN, json, {expires: 1});
+  },
+
+  getCookie() {
+    return JSON.parse(Cookies.get(COOKIE_TECSINAPSE_KEYCLOAK_TOKEN));
+  },
+
+  getAccessToken() {
+    return this.getCookie().access_token;
+  },
+
+  getRefreshToken() {
+    return this.getCookie().refresh_token;
+  },
+
+  getUser(userEmail, options) {
+    return this.login(options.adminUsername, options.adminPassword, {...options, transient: true})
+      .then(access_token => {
+        return KeycloakService.getUsers({email: userEmail}, options, access_token)
+      })
+      .then(users => {
+        if (users && users.length > 0) {
+          return users[0];
+        }
+        return null;
+      });
+  }
 };
+
 export default TecSinapseKeycloak;
