@@ -1,7 +1,3 @@
-import * as Cookies from 'js-cookie';
-
-const COOKIE_TECSINAPSE_KEYCLOAK_TOKEN = 'tecsinapse-keycloak-token';
-
 const TecSinapseKeycloak = {
 
   login(username, password, options) {
@@ -13,7 +9,7 @@ const TecSinapseKeycloak = {
           this.logout();
           Promise.reject(new Error(`Erro ao atualizar token, ${result.error}, ${result.error_description}`));
         }
-        this.setCookie(result);
+        CookieService.setCookie(result);
         return Promise.resolve(result.access_token);
       })
     }
@@ -23,34 +19,26 @@ const TecSinapseKeycloak = {
       }
 
       if (!options.transient) {
-        this.setCookie(json);
+        CookieService.setCookie(json);
       }
       return Promise.resolve(json.access_token);
     });
   },
 
   isLogged() {
-    return !!Cookies.get(COOKIE_TECSINAPSE_KEYCLOAK_TOKEN)
+    CookieService.hasCookie();
   },
 
   logout() {
-    Cookies.remove(COOKIE_TECSINAPSE_KEYCLOAK_TOKEN)
-  },
-
-  setCookie(json) {
-    Cookies.set(COOKIE_TECSINAPSE_KEYCLOAK_TOKEN, json, {expires: 1});
-  },
-
-  getCookie() {
-    return JSON.parse(Cookies.get(COOKIE_TECSINAPSE_KEYCLOAK_TOKEN));
+    CookieService.removeCookie();
   },
 
   getAccessToken() {
-    return this.getCookie().access_token;
+    return CookieService.getCookie().access_token;
   },
 
   getRefreshToken() {
-    return this.getCookie().refresh_token;
+    return CookieService.getCookie().refresh_token;
   },
 
   getUser(userEmail, options) {
