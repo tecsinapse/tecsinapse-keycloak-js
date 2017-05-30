@@ -3,7 +3,7 @@
 ## How to use tecsinapse-keycloak-js
 Use `npm install tecsinapse-keycloak-js --save` to add the lib in your project.
 
-## Making Login with tecsinapse-keycloak-js
+## Login with tecsinapse-keycloak-js
 ```
 import TecSinapseKeycloak from 'tecsinapse-keycloak-js;
 
@@ -17,9 +17,9 @@ const options = {
 TecSinapseKeycloak.login(email, password, options);
 ```
 
-- **Email**: email of the user to make login
+- **Email**: email of the user to do login
 
-- **Password**: password of the user to make login
+- **Password**: password of the user to do login
 
 - **Options**: an object that contains data to configure your access to KeycloakServer. This object contains following attributes:
   - **realm**: The realm of your application in the KeycloakServer
