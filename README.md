@@ -32,6 +32,23 @@ The login method return a promise which contains the accessToken created by Keyc
 
 ```let accessToken = TecSinapseKeycloak.login(email, password, options).then(accessToken => accessToken);```
 
+###### Logout
+The logout method receives a callback function to execute after logout your user. Ex.: redirect to login page.
+
+``` TecSinapseKeycloak.logout(callback);```
+
+###### isLogged
+
+The isLogged method return a boolean to verify if your user still logged in
+
+``` TecSinapseKeycloak.isLogged();```
+
+###### getAccessToken
+
+The getAccessToken method return the accessToken created by KeycloakServer
+
+``` TecSinapseKeycloak.getAccessToken();```
+
 ## Meteor
 
 Example of use with Meteor in
