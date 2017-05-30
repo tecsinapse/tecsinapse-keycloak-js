@@ -29,8 +29,11 @@ const TecSinapseKeycloak = {
     CookieService.hasCookie();
   },
 
-  logout() {
+  logout(callback) {
     CookieService.removeCookie();
+    if (callback) {
+      callback();
+    }
   },
 
   getAccessToken() {

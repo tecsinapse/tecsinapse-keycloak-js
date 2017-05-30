@@ -10,7 +10,7 @@ declare module "tecsinapse-keycloak-js" {
 
         export function login(username:string, password:string, options:KeycloakConfig):Promise;
         export function isLogged():boolean;
-        export function logout():void;
+        export function logout(callback?:Function):void;
         export function getAccessToken():string;
         export function getRefreshToken():string;
         export function getUser(userEmail:string, options:KeycloakConfig):Promise;

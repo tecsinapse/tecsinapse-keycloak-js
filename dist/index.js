@@ -167,8 +167,12 @@ var TecSinapseKeycloak = {
   isLogged: function isLogged() {
     CookieService.hasCookie();
   },
-  logout: function logout() {
+  logout: function logout(callback) {
     CookieService.removeCookie();
+    console.log(callback);
+    if (callback) {
+      callback();
+    }
   },
   getAccessToken: function getAccessToken() {
     return CookieService.getCookie().access_token;
