@@ -6,7 +6,7 @@ const TecSinapseKeycloak = {
       // TODO so pedir refresh quando estiver proximo de expirar o token
       return KeycloakService.refreshToken(options, this.getRefreshToken()).then((result) => {
         if (result.error) {
-          this.logout();
+          this.logout(options);
           Promise.reject(new Error(`Erro ao atualizar token, ${result.error}, ${result.error_description}`));
         }
         CookieService.setCookie(result);
@@ -26,14 +26,21 @@ const TecSinapseKeycloak = {
   },
 
   isLogged() {
-    CookieService.hasCookie();
+    return CookieService.hasCookie();
   },
 
-  logout(callback) {
-    CookieService.removeCookie();
-    if (callback) {
-      callback();
-    }
+  logout(options, callback) {
+    this.login(options.adminUsername, options.adminPassword, {...options, transient: true})
+        .then(accessToken => KeycloakService.logout(options, accessToken, CookieService.getCookie().session_state))
+        .then(res => {
+          if (!res.ok) {
+            Promise.reject(new Error(`Erro ao fazer logout`));
+          }
+          CookieService.removeCookie();
+          if (callback) {
+            callback();
+          }
+        })
   },
 
   getAccessToken() {

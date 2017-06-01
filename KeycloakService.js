@@ -1,6 +1,6 @@
 const KeycloakService = {
 
-  tokenDataForm({user, refreshToken}, refresh = false) {
+  tokenDataForm(keycloakOptions, {user, refreshToken}, refresh = false) {
 
     const auth = refresh ? {
       refresh_token: refreshToken,
@@ -11,7 +11,7 @@ const KeycloakService = {
     const dataForm = {
       ...auth,
       grant_type: refresh ? 'refresh_token' : 'password',
-      client_id: 'admin-cli',
+      client_id: keycloakOptions.clientId,
     };
 
     let formBody = [];
@@ -33,7 +33,7 @@ const KeycloakService = {
         'Accept': 'application/json',
         'Content-Type': 'application/x-www-form-urlencoded'
       },
-      body: this.tokenDataForm(userOrRefreshToken, refresh)
+      body: this.tokenDataForm(keycloakOptions, userOrRefreshToken, refresh)
     })
       .then(res => res.json());
   },
@@ -48,6 +48,10 @@ const KeycloakService = {
 
   createUrlToken(keycloak) {
     return `${keycloak.urlServer}/realms/${keycloak.realm}/protocol/openid-connect/token`;
+  },
+
+  createUrlLogout(keycloak, sessionId) {
+    return `${keycloak.urlServer}/admin/realms/${keycloak.realm}/sessions/${sessionId}`;
   },
 
   createUrlRole(keycloak) {
@@ -80,6 +84,17 @@ const KeycloakService = {
   getUsers(queryParam, options, access_token) {
     return fetch(this.createUrlGetUsers(options, queryParam), this.createHeaderGetRequest(access_token))
       .then(res => res.json());
+  },
+
+  logout(keycloakOptions, accessToken, sessionId) {
+    return fetch(this.createUrlLogout(keycloakOptions, sessionId), {
+      method: 'DELETE',
+      headers: {
+        'Accept': 'application/json',
+        'Authorization': 'Bearer ' + accessToken
+
+      }
+    });
   },
 
   getRoles(keycloak, user) {
