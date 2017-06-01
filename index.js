@@ -62,6 +62,24 @@ const TecSinapseKeycloak = {
         }
         return null;
       });
+  },
+
+  getRoles(options, userId) {
+    return this.login(options.adminUsername, options.adminPassword, {...options, transient: true})
+        .then(accessTokenAdmin => KeycloakService.getRoles(options, userId, accessTokenAdmin))
+        .then(roles => {
+          let clientMapping = roles.clientMappings[options.clientId];
+
+          if (clientMapping) {
+            return clientMapping.mappings.map(m => m.name);
+          }
+          return undefined;
+        })
+  },
+
+  hasRole(options, userId, role) {
+    return this.getRoles(options, userId)
+        .then(roles => roles ? roles.includes(role) : false);
   }
 };
 

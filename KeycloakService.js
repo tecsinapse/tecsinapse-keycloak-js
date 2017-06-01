@@ -54,8 +54,8 @@ const KeycloakService = {
     return `${keycloak.urlServer}/admin/realms/${keycloak.realm}/sessions/${sessionId}`;
   },
 
-  createUrlRole(keycloak) {
-    return `${keycloak.urlServer}/admin/realms/${keycloak.realm}/users/${keycloak.userKeycloakId}/role-mappings`;
+  createUrlRole(keycloak, userId) {
+    return `${keycloak.urlServer}/admin/realms/${keycloak.realm}/users/${userId}/role-mappings`;
   },
 
   createUrlGetUsers(keycloak, params) {
@@ -97,28 +97,12 @@ const KeycloakService = {
     });
   },
 
-  getRoles(keycloak, user) {
-//não foi utilizado new FormData() devido a incompatibilidade com o IE. Mais detalhes aqui: https://developer.mozilla.org/en-US/docs/Web/API/Body/formData
-    const fetchRoles = (accessToken) => {
-      return fetch(this.createUrlRole(keycloak), this.createHeaderGetRequest(accessToken))
+  getRoles(keycloakOptions, userId, accessToken) {
+    return fetch(this.createUrlRole(keycloakOptions, userId), this.createHeaderGetRequest(accessToken))
         .then(res => res.json())
-        .then(roles => {
-          return roles
-        })
         .catch(function (err) {
           console.error(err);
           return undefined
-        })
-    };
-    return this.getToken(keycloak, user)
-      .then(token => {
-        if (token.access_token) {
-          return fetchRoles(token.access_token).then(roles => roles);
-        }
-        throw new Error(token.error_description);
-      }).catch(err => {
-        console.error(err);
-        return undefined;
-      });
+        });
   }
-}
+};
