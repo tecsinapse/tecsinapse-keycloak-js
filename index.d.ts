@@ -35,6 +35,8 @@ declare module "tecsinapse-keycloak-js" {
         export function getAccessToken():string;
         export function getRefreshToken():string;
         export function getUser(userEmail:string, options:KeycloakConfig):Promise;
+        export function getRoles(options:KeycloakConfig, userId:string):Promise<Array<string>>;
+        export function hasRole(options:KeycloakConfig, userId:string, role:string):Promise<boolean>;
     }
     export default TecSinapseKeycloak;
 }
