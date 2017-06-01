@@ -22,8 +22,9 @@ TecSinapseKeycloak.login(email, password, options);
 - **Password**: password of the user to do login
 
 - **Options**: an object that contains data to configure your access to KeycloakServer. This object contains following attributes:
-  - **realm**: The realm of your application in the KeycloakServer
   - **urlServer**: The url of the KeycloakServer. Ex.: http://localhost:8081.
+  - **realm**: The realm of your application in the KeycloakServer.
+  - **clientId**: The clientId where you will login.
   - **adminUsername**: User which contains admin permission in your KeycloakServer to query data user.
   - **adminPassword**: Password which contains admin permission in your KeycloakServer to query data user.
   - **transient(optional)**: Set this attribute with **true**, if you don't want save token in the session.
