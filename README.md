@@ -29,30 +29,72 @@ TecSinapseKeycloak.login(email, password, options);
   - **adminPassword**: Password which contains admin permission in your KeycloakServer to query data user.
   - **transient(optional)**: Set this attribute with **true**, if you don't want save token in the session.
 
-The login method return a promise which contains the accessToken created by KeycloakServer.
+This method return a promise which contains the accessToken created by KeycloakServer.
 
 ```let accessToken = TecSinapseKeycloak.login(email, password, options).then(accessToken => accessToken);```
 
-###### Logout
-The logout method receives a callback function to execute after logout your user. Ex.: redirect to login page.
+  - **Email**: Email of user to do login.
+  - **Password**: Password of user to do login.
+  - **Options**: Same of login method.
 
-``` TecSinapseKeycloak.logout(callback);```
+###### Logout
+This method logout user at KeycloakServer.
+
+``` TecSinapseKeycloak.logout(options, callback);```
+
+  - **Options**: Same of login method.
+  - **callback**: Callback function. Ex.: redirect to login page.
 
 ###### isLogged
 
-The isLogged method return a boolean to verify if your user still logged in
+This method return a boolean to verify if your user still logged in
 
 ``` TecSinapseKeycloak.isLogged();```
 
 ###### getAccessToken
 
-The getAccessToken method return the accessToken created by KeycloakServer
+This method return the accessToken created by KeycloakServer
 
 ``` TecSinapseKeycloak.getAccessToken();```
 
+###### getRefreshToken
+
+This method return the refreshToken created by KeycloakServer
+
+``` TecSinapseKeycloak.getRefreshToken();```
+
+###### getUser
+
+This method return a promise which contains a JSON object that represents the user at KeycloakServer
+
+``` TecSinapseKeycloak.getUser(userEmail, options).then(user => user);```
+
+  - **Options**: Same of login method.
+  - **userEmail**: Email to search user at KeycloakServer.
+
+###### getRoles
+
+This method return a promise which contains an Array of roles user
+
+``` TecSinapseKeycloak.getRoles(options, userId).then(roles => roles);```
+
+  - **Options**: Same of login method.
+  - **userId**: UserId of user at KeycloakServer.
+
+###### hasRole
+
+This method return a promise which contains a boolean value
+
+``` TecSinapseKeycloak.hasRole(options, userId, role);```
+
+  - **Options**: Same of login method.
+  - **userId**: UserId of user at KeycloakServer.
+  - **role**: Role defined at KeycloakServer.
+
+
 ## Meteor
 
-Example of use with Meteor in
+Example of use with Meteor without Accounts
 https://github.com/tecsinapse/tecsinapse-keycloak-meteor-example
 
 Specifically in this file
