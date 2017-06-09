@@ -7,7 +7,7 @@ const TecSinapseKeycloak = {
       return KeycloakService.refreshToken(options, this.getRefreshToken()).then((result) => {
         if (result.error) {
           this.logout(options);
-          Promise.reject(new Error(`Erro ao atualizar token, ${result.error}, ${result.error_description}`));
+          return Promise.reject(new Error(`Erro ao atualizar token, ${result.error}, ${result.error_description}`));
         }
         CookieService.setCookie(result);
         return Promise.resolve(result.access_token);
@@ -15,7 +15,7 @@ const TecSinapseKeycloak = {
     }
     return KeycloakService.getTokenByUsernameAndPassword(options, {username, password}).then(json => {
       if (json.error) {
-        Promise.reject(new Error(`Erro ao obter token de acesso por usuario e senha, ${json.error}, ${json.error_description}`));
+        return Promise.reject(new Error(`Erro ao obter token de acesso por usuario e senha, ${json.error}, ${json.error_description}`));
       }
 
       if (!options.transient) {
@@ -34,7 +34,7 @@ const TecSinapseKeycloak = {
         .then(accessToken => KeycloakService.logout(options, accessToken, CookieService.getCookie().session_state))
         .then(res => {
           if (!res.ok) {
-            Promise.reject(new Error(`Erro ao fazer logout`));
+            return Promise.reject(new Error(`Erro ao fazer logout`));
           }
           CookieService.removeCookie();
           if (callback) {
