@@ -33,12 +33,12 @@ const TecSinapseKeycloak = {
     this.login(options.adminUsername, options.adminPassword, {...options, transient: true})
         .then(accessToken => KeycloakService.logout(options, accessToken, CookieService.getCookie().session_state))
         .then(res => {
-          if (!res.ok) {
-            return Promise.reject(new Error(`Error logging out`));
-          }
           CookieService.removeCookie();
           if (callback) {
             callback();
+          }
+          if (!res.ok) {
+            console.warn(`Error logging out: Session is not found at server, but session is closed on client`)
           }
         })
   },
