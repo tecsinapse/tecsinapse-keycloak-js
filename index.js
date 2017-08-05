@@ -1,3 +1,10 @@
+const removeCookie = (callback) => {
+  CookieService.removeCookie();
+  if (callback) {
+    callback();
+  }
+};
+
 const TecSinapseKeycloak = {
 
   login(username, password, options) {
@@ -32,14 +39,10 @@ const TecSinapseKeycloak = {
   logout(options, callback) {
     this.login(options.adminUsername, options.adminPassword, {...options, transient: true})
         .then(accessToken => KeycloakService.logout(options, accessToken, CookieService.getCookie().session_state))
-        .then(res => {
-          CookieService.removeCookie();
-          if (callback) {
-            callback();
-          }
-          if (!res.ok) {
-            console.warn(`Error logging out: Session is not found at server, but session is closed on client`)
-          }
+        .then(res => removeCookie(callback))
+        .catch(err => {
+          console.warn(`Error logging out: Session is not found at server, but session is closed on client`);
+          removeCookie(callback);
         })
   },
 
@@ -53,9 +56,7 @@ const TecSinapseKeycloak = {
 
   getUser(userEmail, options) {
     return this.login(options.adminUsername, options.adminPassword, {...options, transient: true})
-      .then(access_token => {
-        return KeycloakService.getUsers({email: userEmail}, options, access_token)
-      })
+      .then(access_token => KeycloakService.getUsers({email: userEmail}, options, access_token))
       .then(users => {
         if (users && users.length > 0) {
           return users[0];
