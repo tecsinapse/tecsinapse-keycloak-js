@@ -7,7 +7,6 @@ const removeCookie = (callback) => {
 
 const TecSinapseKeycloak = {
 
-  //login method returns only access_token of json object
   login(username, password, options) {
     const logged = this.isLogged();
     const daysToExpireCookie = options.daysToExpireCookie | 1;
@@ -85,7 +84,6 @@ const TecSinapseKeycloak = {
         .then(roles => roles ? roles.includes(role) : false);
   },
 
-  //This method doesn't save token on cookie, it just returns the json object of KeycloakServer
   getToken(username, password, options) {
     return KeycloakService.getTokenByUsernameAndPassword(options, {username, password});
   }
