@@ -28,6 +28,7 @@ TecSinapseKeycloak.login(email, password, options);
   - **adminUsername**: User which contains admin permission in your KeycloakServer to query data user.
   - **adminPassword**: Password which contains admin permission in your KeycloakServer to query data user.
   - **transient(optional)**: Set this attribute with **true**, if you don't want save token in the session.
+  - **daysToExpireCookie(optional)**: Set this attribute with the number of days to expire the cookie.
 
 This method return a promise which contains the accessToken created by KeycloakServer.
 
@@ -90,7 +91,17 @@ This method return a promise which contains a boolean value
   - **Options**: Same of login method.
   - **userId**: UserId of user at KeycloakServer.
   - **role**: Role defined at KeycloakServer.
+  
+###### getToken
 
+This method doesn't save token on cookie, it just returns the json object of KeycloakServer
+
+``` TecSinapseKeycloak.getToken(email, password, options);```
+
+  - **Email**: Email of user to get token.
+  - **Password**: Password of user to get token.
+  - **Options**: Same of login method.
+  
 
 ## Meteor
 
