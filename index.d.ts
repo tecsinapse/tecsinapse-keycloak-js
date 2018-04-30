@@ -7,6 +7,7 @@ declare module "tecsinapse-keycloak-js" {
             adminUsername:string
             adminPassword:string
             transient?:boolean
+            daysToExpireCookie?:number
         }
 
         /**
