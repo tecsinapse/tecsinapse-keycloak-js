@@ -2,8 +2,8 @@ import * as Cookies from 'js-cookie';
 const COOKIE_TECSINAPSE_KEYCLOAK_TOKEN = 'tecsinapse-keycloak-token';
 
 const CookieService = {
-    setCookie(json) {
-        Cookies.set(COOKIE_TECSINAPSE_KEYCLOAK_TOKEN, json, {expires: 1});
+    setCookie(json, daysToExpire = 1) {
+        Cookies.set(COOKIE_TECSINAPSE_KEYCLOAK_TOKEN, json, {expires: daysToExpire});
     },
 
     getCookie() {

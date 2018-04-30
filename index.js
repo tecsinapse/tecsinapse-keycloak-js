@@ -10,6 +10,7 @@ const TecSinapseKeycloak = {
   //login method returns only access_token of json object
   login(username, password, options) {
     const logged = this.isLogged();
+    const daysToExpireCookie = options.daysToExpireCookie | 1;
     if (logged && !options.transient) {
       // TODO so pedir refresh quando estiver proximo de expirar o token
       return KeycloakService.refreshToken(options, this.getRefreshToken()).then((result) => {
@@ -17,7 +18,7 @@ const TecSinapseKeycloak = {
           this.logout(options);
           return Promise.reject(new Error(`Error updating token, ${result.error}, ${result.error_description}`));
         }
-        CookieService.setCookie(result);
+        CookieService.setCookie(result, daysToExpireCookie);
         return Promise.resolve(result.access_token);
       });
     }
@@ -27,7 +28,7 @@ const TecSinapseKeycloak = {
       }
 
       if (!options.transient) {
-        CookieService.setCookie(json);
+        CookieService.setCookie(json, daysToExpireCookie);
       }
       return Promise.resolve(json.access_token);
     });
