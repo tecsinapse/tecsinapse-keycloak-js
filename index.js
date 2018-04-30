@@ -7,6 +7,7 @@ const removeCookie = (callback) => {
 
 const TecSinapseKeycloak = {
 
+  //login method returns only access_token of json object
   login(username, password, options) {
     const logged = this.isLogged();
     if (logged && !options.transient) {
@@ -18,7 +19,7 @@ const TecSinapseKeycloak = {
         }
         CookieService.setCookie(result);
         return Promise.resolve(result.access_token);
-      })
+      });
     }
     return KeycloakService.getTokenByUsernameAndPassword(options, {username, password}).then(json => {
       if (json.error) {
@@ -43,7 +44,7 @@ const TecSinapseKeycloak = {
         .catch(err => {
           console.warn(`Error logging out: Session is not found at server, but session is closed on client`);
           removeCookie(callback);
-        })
+        });
   },
 
   getAccessToken() {
@@ -75,12 +76,17 @@ const TecSinapseKeycloak = {
             return clientMapping.mappings.map(m => m.name);
           }
           return undefined;
-        })
+        });
   },
 
   hasRole(options, userId, role) {
     return this.getRoles(options, userId)
         .then(roles => roles ? roles.includes(role) : false);
+  },
+
+  //This method doesn't save token on cookie, it just returns the json object of KeycloakServer
+  getToken(username, password, options) {
+    return KeycloakService.getTokenByUsernameAndPassword(options, {username, password});
   }
 };
 

@@ -37,6 +37,14 @@ declare module "tecsinapse-keycloak-js" {
         export function getUser(userEmail:string, options:KeycloakConfig):Promise;
         export function getRoles(options:KeycloakConfig, userId:string):Promise<Array<string>>;
         export function hasRole(options:KeycloakConfig, userId:string, role:string):Promise<boolean>;
+
+        /**
+         * This method doesn't save token on cookie, it just returns the json object of KeycloakServer
+         * @param username 
+         * @param password 
+         * @param options 
+         */
+        export function getToken(username, password, options);
     }
     export default TecSinapseKeycloak;
 }
