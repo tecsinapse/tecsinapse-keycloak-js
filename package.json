@@ -1,6 +1,6 @@
 {
   "name": "tecsinapse-keycloak-js",
-  "version": "1.0.15",
+  "version": "1.0.16",
   "description": "Login, logout and refresh token for Keycloak programmatically",
   "author": "TecSinapse",
   "license": "GNU LPGL 3.0",
@@ -11,7 +11,7 @@
     "compile-watch": "npm run compile -- --watch"
   },
   "dependencies": {
-    "js-cookie": "^2.1.4"
+    "js-cookie": "2.1.4"
   },
   "devDependencies": {
     "babel-cli": "^6.24.1",
