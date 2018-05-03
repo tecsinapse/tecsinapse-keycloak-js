@@ -28,6 +28,7 @@ const KeycloakService = {
 
   getToken(keycloakOptions, userOrRefreshToken, refresh = false) {
     const fetch = keycloakOptions.fetcher | fetch;
+    console.log(fetch);
     return fetch(this.createUrlToken(keycloakOptions), {
       method: 'POST',
       headers: {
