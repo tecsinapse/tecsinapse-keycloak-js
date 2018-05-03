@@ -29,6 +29,7 @@ TecSinapseKeycloak.login(email, password, options);
   - **adminPassword**: Password which contains admin permission in your KeycloakServer to query data user.
   - **transient(optional)**: Set this attribute with **true**, if you don't want save token in the session.
   - **daysToExpireCookie(optional)**: Set this attribute with the number of days to expire the cookie.
+  - **fetcher(optional)**: Custom fetch like [node-fetch](https://github.com/bitinn/node-fetch).
 
 This method return a promise which contains the accessToken created by KeycloakServer.
 
