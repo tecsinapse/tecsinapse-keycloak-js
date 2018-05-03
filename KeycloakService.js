@@ -27,6 +27,7 @@ const KeycloakService = {
   },
 
   getToken(keycloakOptions, userOrRefreshToken, refresh = false) {
+    const fetch = keycloakOptions.fetcher | fetch;
     return fetch(this.createUrlToken(keycloakOptions), {
       method: 'POST',
       headers: {
@@ -82,11 +83,13 @@ const KeycloakService = {
   },
 
   getUsers(queryParam, options, access_token) {
+    const fetch = keycloakOptions.fetcher | fetch;
     return fetch(this.createUrlGetUsers(options, queryParam), this.createHeaderGetRequest(access_token))
       .then(res => res.json());
   },
 
   logout(keycloakOptions, accessToken, sessionId) {
+    const fetch = keycloakOptions.fetcher | fetch;
     return fetch(this.createUrlLogout(keycloakOptions, sessionId), {
       method: 'DELETE',
       headers: {
@@ -98,6 +101,7 @@ const KeycloakService = {
   },
 
   getRoles(keycloakOptions, userId, accessToken) {
+    const fetch = keycloakOptions.fetcher | fetch;
     return fetch(this.createUrlRole(keycloakOptions, userId), this.createHeaderGetRequest(accessToken))
         .then(res => res.json())
         .catch(function (err) {
