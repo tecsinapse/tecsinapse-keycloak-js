@@ -48,11 +48,17 @@ const TecSinapseKeycloak = {
   },
 
   getAccessToken() {
-    return CookieService.getCookie().access_token;
+    if (this.isLogged()) {
+      return CookieService.getCookie().access_token;
+    }
+    return undefined;
   },
 
   getRefreshToken() {
-    return CookieService.getCookie().refresh_token;
+    if (this.isLogged()) {
+      return CookieService.getCookie().refresh_token;
+    }
+    return undefined;
   },
 
   getUser(userEmail, options) {
