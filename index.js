@@ -5,43 +5,43 @@ const removeToken = (callback) => {
   }
 };
 
+let keycloakConfig;
+
 const TecSinapseKeycloak = {
 
-  login(username, password, options) {
+  config(options) {
+    keycloakConfig = options;
+  },
+
+  login(username, password, transient = false) {
     return this.isLogged().then(logged => {
 
-      if (logged && !options.transient) {
+      if (logged && !transient) {
         return Promise.reject('You are already logged in');
       }
-      
-      const daysToExpireToken = options.daysToExpireToken | 1;
 
-      return KeycloakService.getTokenByUsernameAndPassword(options, {username, password}).then(json => {
-        if (json.error) {
-          return Promise.reject(new Error(`Error getting access token by user and password, ${json.error}, ${json.error_description}`));
-        }
-  
-        if (!options.transient) {
-          TokenService.setToken(json, daysToExpireToken);
+      return this.createToken(username, password)
+      .then(json => {
+        if (!transient) {
+          TokenService.setToken(json);
         }
         return Promise.resolve(json.access_token);
       });
-    })
+    });
   },
 
   isLogged() {
     return TokenService.hasToken();
   },
 
-  logout(options, callback) {
-    this.login(options.adminUsername, options.adminPassword, {...options, transient: true})
-        .then(accessToken => TokenService.getToken().then(token => {
-          return KeycloakService.logout(options, accessToken, token.session_state)
-        }))
+  logout({adminUsername, adminPassword}, callback) {
+    this.createToken(adminUsername, adminPassword)
+        .then(adminToken => TokenService.getToken().then(token => KeycloakService.logout(keycloakConfig, adminToken.access_token, token.session_state)))
         .then(res => {
           removeToken(callback);
         })
         .catch(err => {
+          console.error(err);
           console.warn(`Error logging out: Session is not found at server, but session is closed on client`);
           removeToken(callback);
         });
@@ -65,23 +65,17 @@ const TecSinapseKeycloak = {
     return this.getToken().then(token => token.refresh_token);
   },
 
-  getUser(userEmail, options) {
-    return this.login(options.adminUsername, options.adminPassword, {...options, transient: true})
-      .then(access_token => KeycloakService.getUsers({email: userEmail}, options, access_token))
-      .then(users => {
-        if (users && users.length > 0) {
-          return users[0];
-        }
-        return null;
-      });
+  getUser(userEmail, {adminUsername, adminPassword}) {
+    return this.createToken(adminUsername, adminPassword)
+      .then(adminToken => KeycloakService.getUsers({email: userEmail}, keycloakConfig, adminToken.access_token))
+      .then(users => users && users.length > 0 ? users[0] : undefined);
   },
 
-  getRoles(options, userId) {
-    return this.login(options.adminUsername, options.adminPassword, {...options, transient: true})
-        .then(accessTokenAdmin => KeycloakService.getRoles(options, userId, accessTokenAdmin))
+  getRoles(userId, {adminUsername, adminPassword}) {
+    return this.createToken(adminUsername, adminPassword)
+        .then(adminToken => KeycloakService.getRoles(keycloakConfig, userId, adminToken.access_token))
         .then(roles => {
-          let clientMapping = roles.clientMappings[options.clientId];
-
+          let clientMapping = roles.clientMappings[keycloakConfig.clientId];
           if (clientMapping) {
             return clientMapping.mappings.map(m => m.name);
           }
@@ -89,13 +83,19 @@ const TecSinapseKeycloak = {
         });
   },
 
-  hasRole(options, userId, role) {
-    return this.getRoles(options, userId)
+  hasRole(userId, role, userAdmin) {
+    return this.getRoles(userId, userAdmin)
         .then(roles => roles ? roles.includes(role) : false);
   },
 
-  createToken(username, password, options) {
-    return KeycloakService.getTokenByUsernameAndPassword(options, {username, password});
+  createToken(username, password) {
+    return KeycloakService.getTokenByUsernameAndPassword(keycloakConfig, {username, password})
+    .then(json => {
+      if (json.error) {
+        return Promise.reject(new Error(`Error getting access token by user and password, ${json.error}, ${json.error_description}`));
+      }
+      return Promise.resolve(json);
+    });
   }
 };
 

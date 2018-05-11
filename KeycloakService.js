@@ -82,9 +82,9 @@ const KeycloakService = {
     };
   },
 
-  getUsers(queryParam, options, access_token) {
+  getUsers(queryParam, keycloakOptions, access_token) {
     const fetch = this.getFetchFunction(keycloakOptions);
-    return fetch(this.createUrlGetUsers(options, queryParam), this.createHeaderGetRequest(access_token))
+    return fetch(this.createUrlGetUsers(keycloakOptions, queryParam), this.createHeaderGetRequest(access_token))
       .then(res => res.json());
   },
 

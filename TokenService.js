@@ -5,15 +5,21 @@ const EXPIRES_IN = 'expires-in';
 const REFRESH_EXPIRES_IN = 'refresh-expires-in';
 
 const TokenService = {
-    setToken(json, daysToExpire = 1) {
+    setToken(json) {
         const now = moment();
         IdbKeycloak.set(TOKEN_VALUE, json);
-        IdbKeycloak.set(EXPIRES_IN, moment(now).add(json.expires_in, 'seconds').toDate());
-        IdbKeycloak.set(REFRESH_EXPIRES_IN, moment(now).add(json.refresh_expires_in, 'seconds').toDate());
+        IdbKeycloak.set(EXPIRES_IN, moment(now).add(10, 'seconds').toDate());
+        IdbKeycloak.set(REFRESH_EXPIRES_IN, moment(now).add(60, 'seconds').toDate());
     },
 
     getToken() {
-        return IdbKeycloak.get(TOKEN_VALUE);
+        return this.tokenHasExpired(moment())
+            .then(tokenHasExpired => {
+                if (tokenHasExpired) {
+                    
+                }
+                return IdbKeycloak.get(TOKEN_VALUE);
+            });
     },
 
     removeToken() {
