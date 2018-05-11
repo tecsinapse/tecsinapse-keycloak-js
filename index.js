@@ -1,5 +1,5 @@
-const removeCookie = (callback) => {
-  CookieService.removeCookie();
+const removeToken = (callback) => {
+  TokenService.removeToken();
   if (callback) {
     callback();
   }
@@ -8,57 +8,61 @@ const removeCookie = (callback) => {
 const TecSinapseKeycloak = {
 
   login(username, password, options) {
-    const logged = this.isLogged();
-    const daysToExpireCookie = options.daysToExpireCookie | 1;
-    if (logged && !options.transient) {
-      // TODO so pedir refresh quando estiver proximo de expirar o token
-      return KeycloakService.refreshToken(options, this.getRefreshToken()).then((result) => {
-        if (result.error) {
-          this.logout(options);
-          return Promise.reject(new Error(`Error updating token, ${result.error}, ${result.error_description}`));
-        }
-        CookieService.setCookie(result, daysToExpireCookie);
-        return Promise.resolve(result.access_token);
-      });
-    }
-    return KeycloakService.getTokenByUsernameAndPassword(options, {username, password}).then(json => {
-      if (json.error) {
-        return Promise.reject(new Error(`Error getting access token by user and password, ${json.error}, ${json.error_description}`));
-      }
+    return this.isLogged().then(logged => {
 
-      if (!options.transient) {
-        CookieService.setCookie(json, daysToExpireCookie);
+      if (logged && !options.transient) {
+        return Promise.reject('You are already logged in');
       }
-      return Promise.resolve(json.access_token);
-    });
+      
+      const daysToExpireToken = options.daysToExpireToken | 1;
+
+      return KeycloakService.getTokenByUsernameAndPassword(options, {username, password}).then(json => {
+        if (json.error) {
+          return Promise.reject(new Error(`Error getting access token by user and password, ${json.error}, ${json.error_description}`));
+        }
+  
+        if (!options.transient) {
+          TokenService.setToken(json, daysToExpireToken);
+        }
+        return Promise.resolve(json.access_token);
+      });
+    })
   },
 
   isLogged() {
-    return CookieService.hasCookie();
+    return TokenService.hasToken();
   },
 
   logout(options, callback) {
     this.login(options.adminUsername, options.adminPassword, {...options, transient: true})
-        .then(accessToken => KeycloakService.logout(options, accessToken, CookieService.getCookie().session_state))
-        .then(res => removeCookie(callback))
+        .then(accessToken => TokenService.getToken().then(token => {
+          return KeycloakService.logout(options, accessToken, token.session_state)
+        }))
+        .then(res => {
+          removeToken(callback);
+        })
         .catch(err => {
           console.warn(`Error logging out: Session is not found at server, but session is closed on client`);
-          removeCookie(callback);
+          removeToken(callback);
         });
   },
 
+  getToken() {
+    return this.isLogged()
+    .then(logged => {
+      if (logged) {
+        return TokenService.getToken();
+      }
+      return Promise.reject('You are not logged in');
+    });
+  },
+
   getAccessToken() {
-    if (this.isLogged()) {
-      return CookieService.getCookie().access_token;
-    }
-    return undefined;
+    return this.getToken().then(token => token.access_token);
   },
 
   getRefreshToken() {
-    if (this.isLogged()) {
-      return CookieService.getCookie().refresh_token;
-    }
-    return undefined;
+    return this.getToken().then(token => token.refresh_token);
   },
 
   getUser(userEmail, options) {
@@ -90,7 +94,7 @@ const TecSinapseKeycloak = {
         .then(roles => roles ? roles.includes(role) : false);
   },
 
-  getToken(username, password, options) {
+  createToken(username, password, options) {
     return KeycloakService.getTokenByUsernameAndPassword(options, {username, password});
   }
 };

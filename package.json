@@ -11,7 +11,8 @@
     "compile-watch": "npm run compile -- --watch"
   },
   "dependencies": {
-    "js-cookie": "2.1.4"
+    "idb": "2.1.1",
+    "moment": "2.20.1"
   },
   "devDependencies": {
     "babel-cli": "^6.24.1",
