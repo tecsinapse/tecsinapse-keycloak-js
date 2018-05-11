@@ -8,15 +8,19 @@ const TokenService = {
     setToken(json) {
         const now = moment();
         IdbKeycloak.set(TOKEN_VALUE, json);
-        IdbKeycloak.set(EXPIRES_IN, moment(now).add(10, 'seconds').toDate());
-        IdbKeycloak.set(REFRESH_EXPIRES_IN, moment(now).add(60, 'seconds').toDate());
+        IdbKeycloak.set(EXPIRES_IN, moment(now).add(json.expires_in, 'seconds').toDate());
+        IdbKeycloak.set(REFRESH_EXPIRES_IN, moment(now).add(json.refresh_expires_in, 'seconds').toDate());
     },
 
     getToken() {
         return this.tokenHasExpired(moment())
-            .then(tokenHasExpired => {
+            .then(async tokenHasExpired => {
                 if (tokenHasExpired) {
-                    
+                    await IdbKeycloak.get(TOKEN_VALUE)
+                        .then(({ refresh_token }) => {
+                            KeycloakService.refreshToken(keycloakConfig, refresh_token)
+                            .then(this.setToken);
+                        })
                 }
                 return IdbKeycloak.get(TOKEN_VALUE);
             });
