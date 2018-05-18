@@ -35,16 +35,8 @@ const TecSinapseKeycloak = {
   },
 
   logout(callback) {
-    this.createToken(keycloakConfig.adminUsername, keycloakConfig.adminPassword)
-        .then(adminToken => TokenService.getToken().then(token => KeycloakService.logout(keycloakConfig, adminToken.access_token, token.session_state)))
-        .then(res => {
-          removeToken(callback);
-        })
-        .catch(err => {
-          console.error(err);
-          console.warn(`Error logging out: Session is not found at server, but session is closed on client`);
-          removeToken(callback);
-        });
+    return this.createToken(keycloakConfig.adminUsername, keycloakConfig.adminPassword)
+        .then(adminToken => TokenService.getToken().then(token => KeycloakService.logout(keycloakConfig, adminToken.access_token, token.session_state)));
   },
 
   getToken() {
@@ -86,6 +78,10 @@ const TecSinapseKeycloak = {
   hasRole(userId, role) {
     return this.getRoles(userId)
         .then(roles => roles ? roles.includes(role) : false);
+  },
+
+  removeToken(callback) {
+    removeToken(callback);
   },
 
   createToken(username, password) {
