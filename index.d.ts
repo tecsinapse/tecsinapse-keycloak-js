@@ -5,11 +5,8 @@ declare module "tecsinapse-keycloak-js" {
             realm:string
             clientId:string
             fetcher?:function
-        }
-
-        interface UserAdmin {
             adminUsername:string
-            adminPassword:string
+            adminPassword:string    
         }
 
         /**

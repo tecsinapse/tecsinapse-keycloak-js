@@ -34,8 +34,8 @@ const TecSinapseKeycloak = {
     return TokenService.hasToken();
   },
 
-  logout({adminUsername, adminPassword}, callback) {
-    this.createToken(adminUsername, adminPassword)
+  logout(callback) {
+    this.createToken(keycloakConfig.adminUsername, keycloakConfig.adminPassword)
         .then(adminToken => TokenService.getToken().then(token => KeycloakService.logout(keycloakConfig, adminToken.access_token, token.session_state)))
         .then(res => {
           removeToken(callback);
@@ -65,14 +65,14 @@ const TecSinapseKeycloak = {
     return this.getToken().then(token => token.refresh_token);
   },
 
-  getUser(userEmail, {adminUsername, adminPassword}) {
-    return this.createToken(adminUsername, adminPassword)
+  getUser(userEmail) {
+    return this.createToken(keycloakConfig.adminUsername, keycloakConfig.adminPassword)
       .then(adminToken => KeycloakService.getUsers({email: userEmail}, keycloakConfig, adminToken.access_token))
       .then(users => users && users.length > 0 ? users[0] : undefined);
   },
 
-  getRoles(userId, {adminUsername, adminPassword}) {
-    return this.createToken(adminUsername, adminPassword)
+  getRoles(userId) {
+    return this.createToken(keycloakConfig.adminUsername, keycloakConfig.adminPassword)
         .then(adminToken => KeycloakService.getRoles(keycloakConfig, userId, adminToken.access_token))
         .then(roles => {
           let clientMapping = roles.clientMappings[keycloakConfig.clientId];
@@ -83,8 +83,8 @@ const TecSinapseKeycloak = {
         });
   },
 
-  hasRole(userId, role, userAdmin) {
-    return this.getRoles(userId, userAdmin)
+  hasRole(userId, role) {
+    return this.getRoles(userId)
         .then(roles => roles ? roles.includes(role) : false);
   },
 
