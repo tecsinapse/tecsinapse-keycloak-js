@@ -1,4 +1,8 @@
-import * as idb from 'idb';
+let idb = null;
+if(window){
+   idb = require('idb');
+   console.log('window');
+}
 
 const IDB_NAME = 'tecsinapse-keycloak-token';
 const OBJECT_STORE_NAME = 'token';

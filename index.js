@@ -14,6 +14,7 @@ const TecSinapseKeycloak = {
   },
 
   login(username, password, transient = false) {
+    console.log('novo');
     return this.isLogged().then(logged => {
 
       if (logged && !transient) {
@@ -34,9 +35,15 @@ const TecSinapseKeycloak = {
     return TokenService.hasToken();
   },
 
-  logout(callback) {
+  logout(sessionState, callback) {
     return this.createToken(keycloakConfig.adminUsername, keycloakConfig.adminPassword)
-        .then(adminToken => TokenService.getToken().then(token => KeycloakService.logout(keycloakConfig, adminToken.access_token, token.session_state)));
+        .then(adminToken => KeycloakService.logout(keycloakConfig, adminToken.access_token, sessionState))
+        .then(res => removeToken());
+  },
+
+  logoutWithoutRemoveToken(sessionState, callback) {
+    return this.createToken(keycloakConfig.adminUsername, keycloakConfig.adminPassword)
+        .then(adminToken => KeycloakService.logout(keycloakConfig, adminToken.access_token, sessionState));
   },
 
   getToken() {
