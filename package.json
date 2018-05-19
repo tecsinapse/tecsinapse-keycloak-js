@@ -1,6 +1,6 @@
 {
   "name": "tecsinapse-keycloak-js",
-  "version": "2.0.6",
+  "version": "2.0.7",
   "description": "Login, logout and refresh token for Keycloak programmatically",
   "author": "TecSinapse",
   "license": "GNU LPGL 3.0",

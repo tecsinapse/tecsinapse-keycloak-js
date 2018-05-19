@@ -14,7 +14,6 @@ const TecSinapseKeycloak = {
   },
 
   login(username, password, transient = false) {
-    console.log('novo');
     return this.isLogged().then(logged => {
 
       if (logged && !transient) {

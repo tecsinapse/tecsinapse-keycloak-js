@@ -1,7 +1,6 @@
 var idb = { open : () => {}};
 if(typeof window !== 'undefined') {
    idb = require('idb');
-   console.log('window');
 }
 
 const IDB_NAME = 'tecsinapse-keycloak-token';
