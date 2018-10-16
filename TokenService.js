@@ -18,7 +18,7 @@ const TokenService = {
                 if (tokenHasExpired) {
                     await IdbKeycloak.get(TOKEN_VALUE)
                         .then(({ refresh_token }) => {
-                            KeycloakService.refreshToken(keycloakConfig, refresh_token)
+                            await KeycloakService.refreshToken(keycloakConfig, refresh_token)
                             .then(this.setToken);
                         })
                 }
